@@ -34,8 +34,7 @@ public:
         }
         QRectF r(p1,p2);
         QRectF fixRect = r.normalized();
-        fixRect.adjusted(-fixRect.width(),-fixRect.width(),fixRect.width(),fixRect.width());
-        m_updateRect = fixRect;
+        m_updateRect = fixRect.adjusted(-200,-200,400,400);
     }
     QPainterPath StrokePath(int width)
     {
@@ -72,7 +71,8 @@ protected:
 private:
     void resize(const QSizeF & size);
     void drawToTemp(CLineObj * obj);  //在临时层绘图
-    void drawToReal(CLineObj * obj);  //在真实层绘图
+    void drawToReal(CLineObj * obj);  //在真实层绘非矢量图
+    void drawToRealByVector(CLineObj * obj); //在真实层绘矢量图
     void initCanvas();                //初始化图层
 private:
     QSizeF m_size;

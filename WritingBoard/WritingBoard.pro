@@ -26,8 +26,10 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
     wbgraphicsscene.cpp \
-    wbcanvasitem.cpp
+    wbcanvasitem.cpp \
+    wblinevector.cpp
 
 HEADERS += \
     wbgraphicsscene.h \
-    wbcanvasitem.h
+    wbcanvasitem.h \
+    wblinevector.h

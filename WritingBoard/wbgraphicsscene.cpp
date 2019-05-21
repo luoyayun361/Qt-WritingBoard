@@ -13,7 +13,8 @@ WbGraphicsScene::WbGraphicsScene(const QSizeF &size, QObject *parent):
 
 WbGraphicsScene::~WbGraphicsScene()
 {
-
+    qDebug() << "--->Lynn<---" << __FUNCTION__;
+    this->clear();
 }
 
 bool WbGraphicsScene::event(QEvent *e)
