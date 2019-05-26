@@ -1,0 +1,4 @@
+#ifndef WBCOMMONDEF_H
+#define WBCOMMONDEF_H
+
+#endif // WBCOMMONDEF_H
