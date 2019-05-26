@@ -16,7 +16,9 @@ protected:
     bool event(QEvent *e);
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
-    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event); 
+    void keyPressEvent(QKeyEvent *keyEvent);
+
 private:
     bool touchEvent(QTouchEvent *e);
     bool scenePress(int id, const QPointF &pos);

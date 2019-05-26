@@ -1,6 +1,8 @@
 #include "wbgraphicsscene.h"
 #include <QDebug>
 #include <QGraphicsSceneMouseEvent>
+#include <qpixmapcache.h>
+#include <QKeyEvent>
 
 WbGraphicsScene::WbGraphicsScene(const QSizeF &size, QObject *parent):
     QGraphicsScene(QRectF(0, 0, size.width(), size.height()), parent)
@@ -9,6 +11,7 @@ WbGraphicsScene::WbGraphicsScene(const QSizeF &size, QObject *parent):
     m_pCanvasItem = new WbCanvasItem(size);
     m_pCanvasItem->setBackgroundColor(Qt::white);
     this->addItem(m_pCanvasItem);
+    QPixmapCache::setCacheLimit(204800);
 }
 
 WbGraphicsScene::~WbGraphicsScene()
@@ -19,7 +22,6 @@ WbGraphicsScene::~WbGraphicsScene()
 
 bool WbGraphicsScene::event(QEvent *e)
 {
-//    qDebug() << "--->>>Lynn<<<---" << __FUNCTION__ << e->type();
     switch(e->type())
     {
     case QEvent::TouchEnd:
@@ -51,9 +53,25 @@ void WbGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     QGraphicsScene::mouseReleaseEvent(event);
 }
 
+void WbGraphicsScene::keyPressEvent(QKeyEvent *keyEvent)
+{
+    switch (keyEvent->key()) {
+    case Qt::Key_1:
+        m_pCanvasItem->setMode(WbCanvasItem::Mode_DrawLine);
+        break;
+    case Qt::Key_2:
+        m_pCanvasItem->setMode(WbCanvasItem::Mode_Eraser);
+        break;
+    default:
+        m_pCanvasItem->setMode(WbCanvasItem::Mode_DrawLine);
+        break;
+    }
+}
+
 bool WbGraphicsScene::touchEvent(QTouchEvent *e)
 {
     bool rtn = true;
+    return  rtn;
     QList<QTouchEvent::TouchPoint> touchPoints = e->touchPoints();
     foreach (const QTouchEvent::TouchPoint &touchPoint, touchPoints) {
         int id = touchPoint.id() + 1000;  //0,1 reserve for mouse event
