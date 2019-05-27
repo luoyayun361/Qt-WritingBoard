@@ -1,16 +1,9 @@
 #include "wbcanvasitem.h"
 #include <QDebug>
 #include <QPainter>
-#include <wblinevector.h>
 #include <QGraphicsScene>
-
-#define DRAW_VECTOR  //矢量绘图
-
-#define SAFE_DELETE(x) if(x) \
-    { \
-        delete (x); \
-        (x) = nullptr; \
-    } \
+#include <QGraphicsPathItem>
+#include "wbcommondef.h"
 
 WbCanvasItem::WbCanvasItem(const QSizeF & size,QGraphicsObject * parent):
     QGraphicsObject (parent),
@@ -21,17 +14,13 @@ WbCanvasItem::WbCanvasItem(const QSizeF & size,QGraphicsObject * parent):
 
 WbCanvasItem::~WbCanvasItem()
 {
-    qDebug() << "--->Lynn<---" << __FUNCTION__ << "before";
     SAFE_DELETE(m_pRealPainter);
     SAFE_DELETE(m_pRealCanvas);
-    SAFE_DELETE(m_pTempPainter);
-    SAFE_DELETE(m_pTempCanvas);
     qDebug() << "--->Lynn<---" << __FUNCTION__ << "after";
 }
 
 void WbCanvasItem::drawPress(int id, const QPointF &p)
 {
-//    qDebug() << "--->>>Lynn<<<---" << __FUNCTION__ << p;
     CLineObj * obj = new CLineObj(p);
     obj->addToPath(p,p);
     m_lineObjs.insert(id,obj);
@@ -39,47 +28,58 @@ void WbCanvasItem::drawPress(int id, const QPointF &p)
 
 void WbCanvasItem::drawMove(int id, const QPointF &lastPoint, const QPointF &curPoint)
 {
-//    qDebug() << "--->>>Lynn<<<---" << __FUNCTION__ << lastPoint<<curPoint;
     CLineObj * obj = m_lineObjs.value(id,nullptr);
     if(!obj) return;
     obj->addToPath(lastPoint,curPoint);
+
+    if(m_curMode == Mode_DrawLine){
+        if(obj->elementCount() < 300){
+            m_pTempLayer->drawToTemp(obj);
+        }
+        else{
 #ifndef DRAW_VECTOR
-    if(obj->elementCount() < 300){
-        drawToTemp(obj);       //绘制临时层
+            drawToReal(obj);       //绘制真实层 非矢量线
+#else
+            drawToRealByVector(obj);       //绘制真实层，矢量线
+#endif
+            obj->createNewPath();   //清空画线
+        }
     }
     else{
-        drawToReal(obj);       //绘制真实层 非矢量线
-        obj->createNewPath();   //清空画线
+        doErase(lastPoint,curPoint,30);
     }
-#else
-    //这里会不断的创建path 内存会一直增长
-    drawToRealByVector(obj);       //绘制真实层，矢量线
-    obj->createNewPath();   //清空画线
-#endif
 }
 
 void WbCanvasItem::drawRelease(int id, const QPointF &point)
 {
-//    qDebug() << "--->>>Lynn<<<---" << __FUNCTION__ << point;
     CLineObj * obj = m_lineObjs.value(id,nullptr);
     if(!obj) return;
     obj->addToPath(point,point);
-//    drawToRealByVector(obj);  //绘制真实层，矢量线
-#ifndef DRAW_VECTOR
-    drawToReal(obj);  //绘制真实层 非矢量线
+    if(m_curMode == Mode_DrawLine){
+#ifdef DRAW_VECTOR
+        drawToRealByVector(obj);  //绘制真实层，矢量线
+#else
+        drawToReal(obj);  //绘制真实层 非矢量线
 #endif
+    }
+    else{
+        doErase(point,point,30);
+    }
+
     m_lineObjs.remove(id);
     delete obj;
     obj = nullptr;
-    if(m_lineObjs.size() == 0){
-        m_pTempCanvas->fill(Qt::transparent);
-    }
 }
 
 void WbCanvasItem::setBackgroundColor(const QColor &color)
 {
     m_bgColor = color;
     m_pRealCanvas->fill(color);
+}
+
+void WbCanvasItem::setMode(WbCanvasItem::DrawMode mode)
+{
+    m_curMode = mode;
 }
 
 QRectF WbCanvasItem::boundingRect() const
@@ -91,23 +91,12 @@ void WbCanvasItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
 {
 #ifndef DRAW_VECTOR
     painter->drawImage(0,0,*m_pRealCanvas);
-    painter->drawImage(0,0,*m_pTempCanvas);
 #endif
 }
 
 void WbCanvasItem::resize(const QSizeF &size)
 {
     m_size = size;
-}
-
-void WbCanvasItem::drawToTemp(CLineObj *obj)
-{
-    qDebug() << "--->Lynn<---" << __FUNCTION__;
-    m_pTempPainter->setRenderHint(QPainter::Antialiasing, true);
-    m_pTempPainter->setCompositionMode(QPainter::CompositionMode_Source);
-    m_pTempPainter->setPen(QPen(Qt::red,5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-    m_pTempPainter->fillPath(obj->StrokePath(5),Qt::red);
-    this->update(obj->updateRect());
 }
 
 void WbCanvasItem::drawToReal(CLineObj *obj)
@@ -118,29 +107,86 @@ void WbCanvasItem::drawToReal(CLineObj *obj)
     QPainterPath path = obj->StrokePath(5);
     m_pRealPainter->fillPath(path,Qt::red);//填充轮廓
     //清空临时层
-    m_pTempCanvas->fill(Qt::transparent);
+    m_pTempLayer->clear();
     this->update(path.boundingRect());
 }
 
 void WbCanvasItem::drawToRealByVector(CLineObj *obj)
 {
-    //内存会一直增长
+    qDebug() << "--->>>Lynn<<<---" << __FUNCTION__;
     QPainterPath path = obj->StrokePath(5);
     WbLineVector * item = new WbLineVector(this);
     item->setPath(path);
-
     //清空临时层
-    m_pTempCanvas->fill(Qt::transparent);
-    this->update(path.boundingRect());
+    m_pTempLayer->clear();
 }
 
 void WbCanvasItem::initCanvas()
 {
     m_pRealCanvas = new QImage(m_size.toSize(),QImage::Format_ARGB32_Premultiplied);
-    m_pTempCanvas = new QImage(*m_pRealCanvas);
-    m_pTempCanvas->fill(Qt::transparent);
-
+    m_pRealCanvas->fill(Qt::white);
     m_pRealPainter = new QPainter(m_pRealCanvas);
-    m_pTempPainter = new QPainter(m_pTempCanvas);
 
+    //临时绘画层
+    m_pTempLayer = new WbTempCanvasLayer(m_size,this);
+    m_pTempLayer->setZValue(10);
+
+}
+
+void WbCanvasItem::doErase(QPointF pos1, QPointF pos2,int width)
+{
+    QPainterPath path = createStrokePath(pos1, pos2, width);
+
+#ifdef DRAW_VECTOR  //矢量线擦除
+    scene()->setSelectionArea(path);
+
+    QList<QGraphicsItem*> selItems = scene()->selectedItems();
+    qDebug()<<__FUNCTION__<<selItems.size();
+    QList<QGraphicsItem*>::iterator it = selItems.begin();
+    while(it != selItems.end()){
+        QGraphicsItem* item = *it++;
+
+        if(item->type() == Type_LineVector){
+            WbLineVector *lineroamer = dynamic_cast<WbLineVector *>(item);
+            eraseVectorLineRoamer(lineroamer, /*mapFromScene*/(pos1), /*mapFromScene*/(pos2), width);
+        }
+    }
+#else //非矢量线擦除
+    m_pRealPainter->setRenderHint(QPainter::Antialiasing, true);
+    m_pRealPainter->setCompositionMode(QPainter::CompositionMode_Source);
+    m_pRealPainter->setPen(QPen(Qt::white,width, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    m_pRealPainter->fillPath(path,Qt::white);//填充轮廓
+    update();
+#endif
+
+}
+
+void WbCanvasItem::eraseVectorLineRoamer(WbLineVector *l, const QPointF &p1, const QPointF &p2, int width)
+{
+    if(!l->vectorPath().isEmpty()){
+        l->doEraseLine(p1, p2, width);
+        if(l->vectorPath().isEmpty()){
+            l->deleteLater();
+        }
+    }else{
+        //路径为空时，需要把lineroamer删除
+        l->deleteLater();
+    }
+}
+
+QPainterPath WbCanvasItem::createStrokePath(const QPointF &p1, const QPointF &p2, int width)
+{
+    QPainterPath path;
+    path.moveTo(p1);
+    path.lineTo(p2);
+    if(path.isEmpty()){
+        path.addRegion(QRegion(QRect(p1.x()-0.5, p1.y()-0.5, 1, 1),
+                                    QRegion::Ellipse));
+    }
+    QPainterPathStroker stroker;
+    stroker.setWidth(width);
+    stroker.setCapStyle(Qt::RoundCap);
+    stroker.setJoinStyle(Qt::RoundJoin);
+    stroker.createStroke(path);
+    return stroker.createStroke(path);
 }

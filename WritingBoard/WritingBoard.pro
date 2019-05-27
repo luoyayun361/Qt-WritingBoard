@@ -27,9 +27,13 @@ SOURCES += \
         main.cpp \
     wbgraphicsscene.cpp \
     wbcanvasitem.cpp \
-    wblinevector.cpp
+    wblinevector.cpp \
+    wbtempcanvaslayer.cpp
 
 HEADERS += \
     wbgraphicsscene.h \
     wbcanvasitem.h \
-    wblinevector.h
+    wblinevector.h \
+    wbtempcanvaslayer.h \
+    clineobj.h \
+    wbcommondef.h
