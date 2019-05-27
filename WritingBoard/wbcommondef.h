@@ -3,7 +3,7 @@
 
 #include <QGraphicsItem>
 
-//#define DRAW_VECTOR  //矢量绘图
+#define DRAW_VECTOR  //矢量绘图
 
 #define SAFE_DELETE(x) if(x) \
     { \

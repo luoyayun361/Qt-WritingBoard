@@ -2,6 +2,7 @@
 #include <QPainter>
 #include <QDebug>
 #include "wbcommondef.h"
+#include <QTime>
 
 WbLineVector::WbLineVector(QGraphicsObject *parent):
     QGraphicsObject(parent)
@@ -56,8 +57,11 @@ QPainterPath WbLineVector::CreateStrokePath(const QPointF &p1, const QPointF &p2
 
 void WbLineVector::doEraseLine(const QPointF &p1, const QPointF &p2, int width)
 {
+    QTime time;
+    time.start();
     QPainterPath path = CreateStrokePath(p1, p2, width);
     doErasePath(path);
+    qDebug() << "--->Lynn<---" << __FUNCTION__ << time.elapsed();
 }
 
 int WbLineVector::type() const
@@ -75,23 +79,9 @@ void WbLineVector::doErasePath(const QPainterPath &path, bool selfMap)
     }else{
         epath = mapFromScene(path);//转换成内部坐标
     }
-    if(m_currentEraseIndex < m_erasePathList.size()){
-        //保留之前数据,删除后边的
-        m_currentEraseIndex = (m_currentEraseIndex <= 1 ? 2 : m_currentEraseIndex);
-        int count = m_erasePathList.count();
-        for(int i = count; i >= m_currentEraseIndex; i--){
-            m_erasePathList.removeLast();
-        }
-        Q_ASSERT(m_erasePathList.size()>=1);
-    }
+
     //以下这句很耗时，导致擦除卡顿
     m_path -= epath;
 
-    m_ignoreCount--;
-    if(m_ignoreCount<=0){
-        m_erasePathList<<m_path;
-        m_currentEraseIndex = m_erasePathList.size();
-        m_ignoreCount = 2;
-    }
     update();
 }

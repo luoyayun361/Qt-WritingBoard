@@ -4,6 +4,8 @@
 #include <QGraphicsScene>
 #include <QGraphicsPathItem>
 #include "wbcommondef.h"
+#include <QPointer>
+
 
 WbCanvasItem::WbCanvasItem(const QSizeF & size,QGraphicsObject * parent):
     QGraphicsObject (parent),
@@ -33,7 +35,7 @@ void WbCanvasItem::drawMove(int id, const QPointF &lastPoint, const QPointF &cur
     obj->addToPath(lastPoint,curPoint);
 
     if(m_curMode == Mode_DrawLine){
-        if(obj->elementCount() < 300){
+        if(obj->elementCount() < 100){
             m_pTempLayer->drawToTemp(obj);
         }
         else{
@@ -110,12 +112,11 @@ void WbCanvasItem::drawToReal(CLineObj *obj)
     m_pTempLayer->clear();
     this->update(path.boundingRect());
 }
-
 void WbCanvasItem::drawToRealByVector(CLineObj *obj)
 {
     qDebug() << "--->>>Lynn<<<---" << __FUNCTION__;
     QPainterPath path = obj->StrokePath(5);
-    WbLineVector * item = new WbLineVector(this);
+    QPointer<WbLineVector> item = new WbLineVector(this);
     item->setPath(path);
     //清空临时层
     m_pTempLayer->clear();
@@ -148,9 +149,10 @@ void WbCanvasItem::doErase(QPointF pos1, QPointF pos2,int width)
 
         if(item->type() == Type_LineVector){
             WbLineVector *lineroamer = dynamic_cast<WbLineVector *>(item);
-            eraseVectorLineRoamer(lineroamer, /*mapFromScene*/(pos1), /*mapFromScene*/(pos2), width);
+            eraseVectorLineRoamer(lineroamer, pos1, pos2, width);
         }
     }
+
 #else //非矢量线擦除
     m_pRealPainter->setRenderHint(QPainter::Antialiasing, true);
     m_pRealPainter->setCompositionMode(QPainter::CompositionMode_Source);
