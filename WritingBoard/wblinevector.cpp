@@ -57,11 +57,8 @@ QPainterPath WbLineVector::CreateStrokePath(const QPointF &p1, const QPointF &p2
 
 void WbLineVector::doEraseLine(const QPointF &p1, const QPointF &p2, int width)
 {
-    QTime time;
-    time.start();
     QPainterPath path = CreateStrokePath(p1, p2, width);
     doErasePath(path);
-    qDebug() << "--->Lynn<---" << __FUNCTION__ << time.elapsed();
 }
 
 int WbLineVector::type() const
@@ -80,8 +77,11 @@ void WbLineVector::doErasePath(const QPainterPath &path, bool selfMap)
         epath = mapFromScene(path);//转换成内部坐标
     }
 
+    QTime time;
+    time.start();
     //以下这句很耗时，导致擦除卡顿
     m_path -= epath;
+    qDebug() << "--->Lynn<---" << __FUNCTION__ << time.elapsed();
 
     update();
 }

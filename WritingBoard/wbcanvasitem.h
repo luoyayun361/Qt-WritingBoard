@@ -22,13 +22,15 @@ public:
     void drawRelease(int id, const QPointF &point);
     void setBackgroundColor(const QColor & color);
     void setMode(DrawMode mode);
+    void clear();
+    void setScaleR(qreal scale);
+    qreal scaleR()const;
 protected:
     QRectF boundingRect() const;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
 private:
     void resize(const QSizeF & size);
-//    void drawToTemp(CLineObj * obj);  //在临时层绘图
     void drawToReal(CLineObj * obj);  //在真实层绘非矢量图
     void drawToRealByVector(CLineObj * obj); //在真实层绘矢量图
     void initCanvas();                //初始化图层
@@ -39,8 +41,6 @@ private:
     QPainterPath createStrokePath(const QPointF &p1, const QPointF &p2, int width);
 private:
     QSizeF m_size;
-//    QImage   *m_pTempCanvas;//临时画布
-//    QPainter *m_pTempPainter = nullptr;//临时画布的painter
 
     WbTempCanvasLayer * m_pTempLayer = nullptr;
 

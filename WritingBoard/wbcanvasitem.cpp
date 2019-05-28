@@ -35,7 +35,7 @@ void WbCanvasItem::drawMove(int id, const QPointF &lastPoint, const QPointF &cur
     obj->addToPath(lastPoint,curPoint);
 
     if(m_curMode == Mode_DrawLine){
-        if(obj->elementCount() < 100){
+        if(obj->elementCount() < 300){
             m_pTempLayer->drawToTemp(obj);
         }
         else{
@@ -82,6 +82,57 @@ void WbCanvasItem::setBackgroundColor(const QColor &color)
 void WbCanvasItem::setMode(WbCanvasItem::DrawMode mode)
 {
     m_curMode = mode;
+}
+
+void WbCanvasItem::clear()
+{
+#ifdef DRAW_VECTOR
+    QList<QGraphicsItem*> items = this->childItems();
+    QList<QGraphicsItem*>::iterator it = items.begin();
+    while(it != items.end()){
+        QGraphicsItem* item = *it++;
+        if(item->type() == Type_LineVector){
+            delete item;
+            item = nullptr;
+        }
+    }
+#else
+    m_pRealCanvas->fill(m_bgColor);
+#endif
+    update();
+}
+
+void WbCanvasItem::setScaleR(qreal scale)
+{
+//    setTransformOriginPoint(boundingRect().center());//围绕中心操作
+#ifdef DRAW_VECTOR
+    QList<QGraphicsItem*> items = this->childItems();
+    QList<QGraphicsItem*>::iterator it = items.begin();
+    while(it != items.end()){
+        QGraphicsItem* item = *it++;
+        if(item->type() == Type_LineVector){
+            item->setScale(scale);
+        }
+    }
+#else
+    this->setScale(scale);
+#endif
+}
+
+qreal WbCanvasItem::scaleR() const
+{
+#ifdef DRAW_VECTOR
+    QList<QGraphicsItem*> items = this->childItems();
+    QList<QGraphicsItem*>::iterator it = items.begin();
+    while(it != items.end()){
+        QGraphicsItem* item = *it++;
+        if(item->type() == Type_LineVector){
+            return item->scale();
+        }
+    }
+#else
+    this->scale();
+#endif
 }
 
 QRectF WbCanvasItem::boundingRect() const

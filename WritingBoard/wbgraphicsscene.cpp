@@ -62,6 +62,15 @@ void WbGraphicsScene::keyPressEvent(QKeyEvent *keyEvent)
     case Qt::Key_2:
         m_pCanvasItem->setMode(WbCanvasItem::Mode_Eraser);
         break;
+    case Qt::Key_3:
+        m_pCanvasItem->clear();
+        break;
+    case Qt::Key_Up:
+        m_pCanvasItem->setScaleR(m_pCanvasItem->scaleR()+0.1);
+        break;
+    case Qt::Key_Down:
+        m_pCanvasItem->setScaleR(m_pCanvasItem->scaleR()-0.1);
+        break;
     default:
         m_pCanvasItem->setMode(WbCanvasItem::Mode_DrawLine);
         break;
