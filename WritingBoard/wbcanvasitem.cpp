@@ -102,24 +102,23 @@ void WbCanvasItem::clear()
     update();
 }
 
-void WbCanvasItem::setScaleR(qreal scale)
+void WbCanvasItem::zoomIn(qreal sc)
 {
-//    setTransformOriginPoint(boundingRect().center());//围绕中心操作
 #ifdef DRAW_VECTOR
     QList<QGraphicsItem*> items = this->childItems();
     QList<QGraphicsItem*>::iterator it = items.begin();
     while(it != items.end()){
         QGraphicsItem* item = *it++;
         if(item->type() == Type_LineVector){
-            item->setScale(scale);
+            item->setScale(item->scale() + sc);
         }
     }
 #else
-    this->setScale(scale);
+    this->setScale(item->scale() + sc);
 #endif
 }
 
-qreal WbCanvasItem::scaleR() const
+void WbCanvasItem::zoomOut(qreal sc)
 {
 #ifdef DRAW_VECTOR
     QList<QGraphicsItem*> items = this->childItems();
@@ -127,11 +126,11 @@ qreal WbCanvasItem::scaleR() const
     while(it != items.end()){
         QGraphicsItem* item = *it++;
         if(item->type() == Type_LineVector){
-            return item->scale();
+            item->setScale(item->scale() - sc);
         }
     }
 #else
-    this->scale();
+    this->setScale(item->scale() - sc);
 #endif
 }
 
@@ -182,6 +181,8 @@ void WbCanvasItem::initCanvas()
     //临时绘画层
     m_pTempLayer = new WbTempCanvasLayer(m_size,this);
     m_pTempLayer->setZValue(10);
+
+//    this->setTransformOriginPoint(this->boundingRect().center());
 
 }
 

@@ -23,7 +23,8 @@ public:
     void setBackgroundColor(const QColor & color);
     void setMode(DrawMode mode);
     void clear();
-    void setScaleR(qreal scale);
+    void zoomIn(qreal sc);  //放大
+    void zoomOut(qreal sc); //缩小
     qreal scaleR()const;
 protected:
     QRectF boundingRect() const;

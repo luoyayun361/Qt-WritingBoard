@@ -66,10 +66,10 @@ void WbGraphicsScene::keyPressEvent(QKeyEvent *keyEvent)
         m_pCanvasItem->clear();
         break;
     case Qt::Key_Up:
-        m_pCanvasItem->setScaleR(m_pCanvasItem->scaleR()+0.1);
+        m_pCanvasItem->zoomIn(0.1);
         break;
     case Qt::Key_Down:
-        m_pCanvasItem->setScaleR(m_pCanvasItem->scaleR()-0.1);
+        m_pCanvasItem->zoomOut(0.1);
         break;
     default:
         m_pCanvasItem->setMode(WbCanvasItem::Mode_DrawLine);

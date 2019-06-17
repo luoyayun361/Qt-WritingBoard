@@ -6,7 +6,7 @@ WbTempCanvasLayer::WbTempCanvasLayer(const QSizeF &size, QGraphicsObject *parent
     QGraphicsObject (parent),
     m_size(size)
 {
-    setCacheMode(ItemCoordinateCache);
+    setCacheMode(DeviceCoordinateCache);
     initCanvas();
 }
 

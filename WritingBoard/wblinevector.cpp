@@ -7,8 +7,9 @@
 WbLineVector::WbLineVector(QGraphicsObject *parent):
     QGraphicsObject(parent)
 {
-    setCacheMode(ItemCoordinateCache);
+    setCacheMode(DeviceCoordinateCache);
     setFlag(QGraphicsItem::ItemIsSelectable);
+//    this->setTransformOriginPoint(this->boundingRect().center());
 }
 
 WbLineVector::~WbLineVector()
