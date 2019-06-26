@@ -21,9 +21,14 @@ public:
         m_path &= QPainterPath();
         m_path.moveTo(endPoint);
     }
+    void createNewRealPath()
+    {
+        m_realPath &= QPainterPath();
+    }
     QPainterPath& path(){
         return m_path;
     }
+
     void addToPath(const QPointF & p1,const QPointF & p2)
     {
         QPointF pt1 = (p1);
@@ -36,6 +41,7 @@ public:
         QRectF r(p1,p2);
         QRectF fixRect = r.normalized();
         m_updateRect = fixRect.adjusted(-200,-200,400,400);
+        m_realPath.addPath(m_path);
     }
     QPainterPath StrokePath(int width)
     {
@@ -45,6 +51,14 @@ public:
         stroker.setJoinStyle(Qt::RoundJoin);
         return  stroker.createStroke(m_path);
     }
+    QPainterPath StrokeRealPath(int width)
+    {
+        QPainterPathStroker stroker;
+        stroker.setWidth(width);
+        stroker.setCapStyle(Qt::RoundCap);
+        stroker.setJoinStyle(Qt::RoundJoin);
+        return  stroker.createStroke(m_realPath);
+    }
     QRectF updateRect(){
         return m_updateRect;
     }
@@ -52,6 +66,7 @@ public:
 
 private:
     QPainterPath m_path;
+    QPainterPath m_realPath;
     QRectF m_updateRect;
 };
 

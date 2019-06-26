@@ -5,6 +5,7 @@
 #include <QGraphicsPathItem>
 #include "wbcommondef.h"
 #include <QPointer>
+#include <QTime>
 
 
 WbCanvasItem::WbCanvasItem(const QSizeF & size,QGraphicsObject * parent):
@@ -26,6 +27,7 @@ void WbCanvasItem::drawPress(int id, const QPointF &p)
     CLineObj * obj = new CLineObj(p);
     obj->addToPath(p,p);
     m_lineObjs.insert(id,obj);
+    m_pTempLayer->drawToTemp(obj);
 }
 
 void WbCanvasItem::drawMove(int id, const QPointF &lastPoint, const QPointF &curPoint)
@@ -35,6 +37,7 @@ void WbCanvasItem::drawMove(int id, const QPointF &lastPoint, const QPointF &cur
     obj->addToPath(lastPoint,curPoint);
 
     if(m_curMode == Mode_DrawLine){
+#if 0
         if(obj->elementCount() < 300){
             m_pTempLayer->drawToTemp(obj);
         }
@@ -46,6 +49,16 @@ void WbCanvasItem::drawMove(int id, const QPointF &lastPoint, const QPointF &cur
 #endif
             obj->createNewPath();   //清空画线
         }
+#else
+#ifndef DRAW_VECTOR
+        drawToReal(obj);
+        obj->createNewPath();   //清空画线
+#else
+        m_pTempLayer->drawToTemp(obj);
+        obj->createNewPath();   //清空画线
+#endif
+
+#endif
     }
     else{
         doErase(lastPoint,curPoint,30);
@@ -60,6 +73,7 @@ void WbCanvasItem::drawRelease(int id, const QPointF &point)
     if(m_curMode == Mode_DrawLine){
 #ifdef DRAW_VECTOR
         drawToRealByVector(obj);  //绘制真实层，矢量线
+        obj->createNewRealPath();   //清空画线
 #else
         drawToReal(obj);  //绘制真实层 非矢量线
 #endif
@@ -114,7 +128,7 @@ void WbCanvasItem::zoomIn(qreal sc)
         }
     }
 #else
-    this->setScale(item->scale() + sc);
+    this->setScale(this->scale() + sc);
 #endif
 }
 
@@ -130,7 +144,7 @@ void WbCanvasItem::zoomOut(qreal sc)
         }
     }
 #else
-    this->setScale(item->scale() - sc);
+    this->setScale(this->scale() - sc);
 #endif
 }
 
@@ -142,6 +156,7 @@ QRectF WbCanvasItem::boundingRect() const
 void WbCanvasItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
 #ifndef DRAW_VECTOR
+    painter->setRenderHint(QPainter::SmoothPixmapTransform);
     painter->drawImage(0,0,*m_pRealCanvas);
 #endif
 }
@@ -165,7 +180,7 @@ void WbCanvasItem::drawToReal(CLineObj *obj)
 void WbCanvasItem::drawToRealByVector(CLineObj *obj)
 {
     qDebug() << "--->>>Lynn<<<---" << __FUNCTION__;
-    QPainterPath path = obj->StrokePath(5);
+    QPainterPath path = obj->StrokeRealPath(5);
     QPointer<WbLineVector> item = new WbLineVector(this);
     item->setPath(path);
     //清空临时层

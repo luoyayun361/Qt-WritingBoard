@@ -30,6 +30,7 @@ QRectF WbTempCanvasLayer::boundingRect() const
 
 void WbTempCanvasLayer::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
+    qDebug() << "--->Lynn<---" << __FUNCTION__;
     painter->drawImage(0,0,*m_pTempCanvas);
 }
 

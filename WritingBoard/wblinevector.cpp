@@ -8,7 +8,7 @@ WbLineVector::WbLineVector(QGraphicsObject *parent):
     QGraphicsObject(parent)
 {
     setCacheMode(DeviceCoordinateCache);
-    setFlag(QGraphicsItem::ItemIsSelectable);
+//    setFlag(QGraphicsItem::ItemIsSelectable);
 //    this->setTransformOriginPoint(this->boundingRect().center());
 }
 
@@ -26,6 +26,7 @@ void WbLineVector::setPath(const QPainterPath &path)
 
 void WbLineVector::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
+    qDebug() << "--->Lynn<---" << __FUNCTION__;
     painter->setRenderHint(QPainter::Antialiasing, true);
     painter->setCompositionMode(QPainter::CompositionMode_Source);
     painter->setPen(QPen(Qt::red,2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
