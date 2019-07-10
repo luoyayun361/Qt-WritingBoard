@@ -27,3 +27,6 @@ Qt实现画板，支持多点画线，线条平滑、无折线，重点体现书
 <img src="https://github.com/luoyayun361/Qt-WritingBoard/blob/master/GIF.gif"/>
 
 
+博客介绍：https://blog.csdn.net/luoyayun361/article/details/93650003
+
+
